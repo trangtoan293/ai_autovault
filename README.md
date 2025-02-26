@@ -1,92 +1,214 @@
-# ai_autovault
+## Quản lý Role & Permissions
 
+Ứng dụng hỗ trợ hai role chính:
 
+1. **User**: Có thể upload metadata, tạo models, xem kết quả và thực hiện các tác vụ thông thường
+2. **Admin**: Có tất cả quyền của user và thêm quyền triển khai (deploy) models
 
-## Getting started
+### Tạo User mới:
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin http://gitlab.katalyst.vn:7979/de-team/ai_autovault.git
-git branch -M main
-git push -uf origin main
+```bash
+python scripts/create_admin.py --username newuser --password password --email user@example.com
 ```
 
-## Integrate with your tools
+*Sửa role thành "user" trong output và thêm vào `app/core/security.py`*
 
-- [ ] [Set up project integrations](http://gitlab.katalyst.vn:7979/de-team/ai_autovault/-/settings/integrations)
+### Quyền hạn theo endpoint:
 
-## Collaborate with your team
+- Các endpoints thông thường: Yêu cầu role `user`
+- Deploy endpoints: Yêu cầu role `admin`# Data Modeling Automation
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Một ứng dụng tự động hóa quá trình mô hình hóa dữ liệu (Data Modeling Automation) với sự hỗ trợ của trí tuệ nhân tạo. Ứng dụng này giúp tự động hóa việc tạo mô hình dữ liệu Data Vault, quản lý dự án DBT, và thực hiện các hoạt động liên quan đến metadata.
 
-## Test and Deploy
+## Tính năng chính
 
-Use the built-in continuous integration in GitLab.
+- **Xử lý Metadata**: Tự động trích xuất metadata từ file CSV/Excel và lưu trữ vào cơ sở dữ liệu
+- **Mô hình hóa dữ liệu với AI**: Sử dụng AI để tạo mô hình Data Vault (Hub, Link, Satellite) dựa trên metadata
+- **Quản lý dự án DBT**: Khởi tạo, chạy, kiểm thử và triển khai dự án DBT
+- **Tích hợp Git**: Quản lý phiên bản của mô hình dữ liệu và tích hợp với GitLab
+- **API RESTful**: API đầy đủ để tích hợp với các hệ thống khác
+- **Authentication & Authorization**: Bảo mật API với JWT và role-based access control
+- **Caching**: Tích hợp Redis cache để tối ưu performance
+- **Background Processing**: Xử lý các tác vụ dài trong background
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+## Về Data Vault 2.0
 
-***
+Data Vault 2.0 là một phương pháp mô hình hóa dữ liệu được thiết kế cho hệ thống Enterprise Data Warehouse. Ứng dụng này tự động hóa việc tạo ba thành phần chính của Data Vault:
 
-# Editing this README
+- **Hub**: Chứa các business keys và đại diện cho các thực thể kinh doanh cốt lõi
+- **Link**: Thể hiện mối quan hệ giữa các Hubs
+- **Satellite**: Lưu trữ các thuộc tính mô tả cho Hubs hoặc Links
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Hệ thống sử dụng AI để phân tích metadata và tự động đề xuất cấu trúc Data Vault phù hợp, bao gồm việc xác định business keys, mối quan hệ, và các thuộc tính mô tả.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Cấu trúc dự án
 
-## Name
-Choose a self-explaining name for your project.
+```
+data_modeling_automation/
+├── app/                        # Mã nguồn ứng dụng
+│   ├── main.py                 # Entry point của FastAPI
+│   ├── core/                   # Cấu hình ứng dụng
+│   │   ├── config.py           # Cấu hình ứng dụng
+│   │   ├── security.py         # Xác thực và phân quyền
+│   │   └── logging.py          # Cấu hình logging
+│   ├── api/                    # API endpoints
+│   │   ├── endpoints/          # Các endpoint routes
+│   │   ├── dependencies.py     # API dependencies
+│   │   └── error_handlers.py   # Xử lý lỗi API
+│   ├── services/               # Business logic
+│   │   ├── data_ingestion.py   # Xử lý file CSV/Excel
+│   │   ├── metadata_store.py   # Lưu trữ metadata
+│   │   ├── model_generator.py  # Tạo model với AI
+│   │   ├── dbt_manager.py      # Quản lý dự án DBT
+│   │   └── git_manager.py      # Quản lý Git operations
+│   ├── models/                 # Data models
+│   │   ├── metadata.py         # Metadata models
+│   │   ├── config.py           # Configuration models
+│   │   └── response.py         # API response models
+│   └── utils/                  # Các tiện ích
+├── templates/                  # Templates Jinja2
+│   ├── dbt/                    # DBT project templates
+│   └── models/                 # Data model templates
+├── scripts/                    # Utility scripts
+│   └── create_admin.py         # Script tạo admin user
+├── tests/                      # Unit tests
+├── Dockerfile                  # Docker configuration
+├── docker-compose.yml          # Docker Compose configuration
+├── requirements.txt            # Python dependencies
+└── README.md                   # Documentation
+```
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Yêu cầu hệ thống
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- Python 3.12
+- Redis (cho caching)
+- PostgreSQL (hoặc SQLite cho development)
+- Git
+- DBT (Data Build Tool)
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Cài đặt 
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+1. Cài đặt Python 3.12 hoặc cao hơn
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+2. Cài đặt và khởi động Redis:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install redis-server
+   sudo systemctl start redis
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+   # macOS
+   brew install redis
+   brew services start redis
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+   # Windows
+   # Tải và cài đặt Redis từ https://github.com/microsoftarchive/redis/releases
+   ```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+3. Tạo và kích hoạt môi trường ảo:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   .\venv\Scripts\activate   # Windows
+   ```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+4. Cài đặt các gói phụ thuộc:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+5. Sao chép file `.env.example` thành `.env` và cập nhật các biến môi trường:
+   ```bash
+   cp .env.example .env
+   ```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+6. Tạo tài khoản admin:
+   ```bash
+   python scripts/create_admin.py --username admin --password yourpassword --email admin@example.com
+   ```
+   *Theo hướng dẫn cập nhật thông tin user trong `app/core/security.py`*
 
-## License
-For open source projects, say how it is licensed.
+7. Khởi động ứng dụng:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+8. Truy cập API tại http://localhost:8000
+
+## Sử dụng API
+
+API documentation có sẵn tại http://localhost:8000/docs hoặc http://localhost:8000/redoc sau khi khởi động ứng dụng.
+
+### Authentication
+
+Tất cả API endpoints (ngoại trừ health check và login) yêu cầu JWT authentication.
+
+1. Đăng nhập để lấy access token:
+   ```bash
+   curl -X POST "http://localhost:8000/api/auth/token" \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"yourpassword"}'
+   ```
+
+2. Sử dụng access token trong các requests:
+   ```bash
+   curl -X GET "http://localhost:8000/api/metadata/" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+   ```
+
+### Endpoint chính:
+
+#### Authentication
+- `POST /api/auth/token`: Đăng nhập và lấy access token
+
+#### Metadata
+- `POST /api/metadata/upload`: Tải lên file metadata (CSV/Excel)
+- `GET /api/metadata/`: Lấy danh sách metadata
+- `GET /api/metadata/{id}`: Lấy chi tiết metadata
+
+#### Data Modeling
+- `POST /api/models/generate`: Tạo mô hình dữ liệu
+- `GET /api/models/templates`: Lấy danh sách templates
+- `POST /api/models/batch`: Tạo nhiều mô hình cùng lúc
+
+#### DBT Management
+- `POST /api/dbt/init`: Khởi tạo dự án DBT, có thể clone từ GitLab
+- `POST /api/dbt/compile`: Compile các mô hình DBT mà không chạy
+- `POST /api/dbt/run`: Chạy các mô hình DBT
+- `POST /api/dbt/test`: Chạy DBT tests
+- `GET /api/dbt/status/{job_id}`: Kiểm tra trạng thái job
+- `GET /api/dbt/docs`: Tạo DBT documentation
+- `POST /api/dbt/deploy`: Triển khai mô hình (chỉ admin)
+
+### Ví dụ về quy trình làm việc:
+
+1. Upload metadata:
+   ```bash
+   curl -X POST "http://localhost:8000/api/metadata/upload" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: multipart/form-data" \
+     -F "file=@path/to/metadata.csv"
+   ```
+
+2. Generate Data Vault model:
+   ```bash
+   curl -X POST "http://localhost:8000/api/models/generate" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"table_name":"customers","model_type":"hub","use_ai_enhancement":true}'
+   ```
+
+3. Initialize DBT project:
+   ```bash
+   curl -X POST "http://localhost:8000/api/dbt/init" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"repo_url":"https://gitlab.com/your-username/your-repo.git"}'
+   ```
+
+4. Run DBT models:
+   ```bash
+   curl -X POST "http://localhost:8000/api/dbt/run" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"models":["hub_customers","sat_customer_details"]}'
+   ```

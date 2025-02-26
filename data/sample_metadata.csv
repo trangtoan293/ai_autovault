@@ -1,0 +1,13 @@
+schema_name,table_name,column_name,column_data_type,table_description,column_description
+public,customers,id,integer,Main customers table,Primary key for customer
+public,customers,name,varchar,Main customers table,Full name of customer
+public,customers,email,varchar,Main customers table,Email address of customer
+public,customers,created_at,timestamp,Main customers table,Registration date
+public,orders,id,integer,Orders tracking table,Primary key for order
+public,orders,customer_id,integer,Orders tracking table,Foreign key to customers
+public,orders,order_date,timestamp,Orders tracking table,Date of order
+public,orders,total_amount,decimal,Orders tracking table,Total order amount
+public,products,id,integer,Product catalog,Primary key for product
+public,products,name,varchar,Product catalog,Product name
+public,products,description,text,Product catalog,Product description
+public,products,price,decimal,Product catalog,Product price

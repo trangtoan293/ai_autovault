@@ -1,0 +1,71 @@
+{% if ai_suggestions is defined and ai_suggestions and ai_suggestions.links %}
+  {% for link in ai_suggestions.links %}
+source_schema: {{ link.source_schema }}
+source_table: {{ link.source_table }}
+target_schema: {{ link.target_schema }}
+target_table: {{ link.target_table }}
+target_entity_type: {{ link.target_entity_type }}
+collision_code: {{ link.collision_code }}
+description: {{ link.description }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+{% for column in link.columns %}
+- target: {{ column.target }}
+  dtype: {{ column.dtype }}
+  {% if column.key_type %}key_type: {{ column.key_type }}{% endif %}
+  {% if column.parent %}parent: {{ column.parent }}{% endif %}
+  {% if column.source %}
+  source:
+  {% if column.source is string %}
+  - {{ column.source }}
+  {% elif column.source is iterable and column.source is not mapping %}
+  {% for src in column.source %}
+  - {{ src }}
+  {% endfor %}
+  {% else %}
+  - name: {{ column.source.name }}
+    dtype: {{ column.source.dtype }}
+  {% endif %}
+  {% endif %}
+{% endfor %}
+  {% endfor %}
+{% else %}
+source_schema: {{ source_system if source_system is defined else "DEFAULT" }}
+source_table: {{ table_name }}
+target_schema: INTEGRATION
+target_table: LNK_{{ table_name | upper }}
+target_entity_type: lnk
+collision_code: MDM
+description: Link for {{ table_name }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: warnings
+  validation_warnings:
+  - 'Auto-generated link - needs manual configuration'
+columns:
+- target: DV_HKEY_LNK_{{ table_name | upper }}
+  dtype: raw
+  key_type: hash_key_lnk
+  source:
+  {% for column in columns %}
+  {% if column.is_primary_key or column.is_foreign_key %}
+  - {{ column.column_name }}
+  {% endif %}
+  {% endfor %}
+{% for column in columns %}
+{% if column.is_foreign_key %}
+- target: DV_HKEY_HUB_{{ column.foreign_key_table | upper }}
+  dtype: raw
+  key_type: hash_key_hub
+  parent: HUB_{{ column.foreign_key_table | upper }}
+  source:
+  - name: {{ column.column_name }}
+    dtype: {{ column.data_type }}
+{% endif %}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,89 @@
+schema_name,table_name,column_name,column_data_type,table_description,column_description
+toantt_test,STTM_CUSTOMER,CUSTOMER_NO,VARCHAR2,bảng mo tả khách hàng ,Mã khách hàng
+toantt_test,STTM_CUSTOMER,CUSTOMER_TYPE,CHAR,bảng mo tả khách hàng ,Loại khách hàng
+toantt_test,STTM_CUSTOMER,CUSTOMER_NAME1,VARCHAR2,bảng mo tả khách hàng ,Tên khách hàng
+toantt_test,STTM_CUSTOMER,ADDRESS_LINE1,VARCHAR2,bảng mo tả khách hàng ,Địa chỉ khách hàng
+toantt_test,STTM_CUSTOMER,ADDRESS_LINE2,VARCHAR2,bảng mo tả khách hàng ,Địa chỉ khách hàng
+toantt_test,STTM_CUSTOMER,ADDRESS_LINE3,VARCHAR2,bảng mo tả khách hàng ,Địa chỉ khách hàng
+toantt_test,STTM_CUSTOMER,COUNTRY,VARCHAR2,bảng mo tả khách hàng ,Quốc gia
+toantt_test,STTM_CUSTOMER,SHORT_NAME,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,NATIONALITY,VARCHAR2,bảng mo tả khách hàng ,Số Passport/CMND/Giấy ĐKKD
+toantt_test,STTM_CUSTOMER,LANGUAGE,VARCHAR2,bảng mo tả khách hàng ,Ngôn ngữ
+toantt_test,STTM_CUSTOMER,EXPOSURE_COUNTRY,VARCHAR2,bảng mo tả khách hàng ,Quốc gia có khi năng rủi ro
+toantt_test,STTM_CUSTOMER,LOCAL_BRANCH,VARCHAR2,bảng mo tả khách hàng ,Chi nhánh
+toantt_test,STTM_CUSTOMER,LIABILITY_NO,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UNIQUE_ID_NAME,VARCHAR2,bảng mo tả khách hàng ,Định danh người vụ tai chính
+toantt_test,STTM_CUSTOMER,UNIQUE_ID_VALUE,VARCHAR2,bảng mo tả khách hàng ,Loại giấy tờ
+toantt_test,STTM_CUSTOMER,FROZEN,CHAR,bảng mo tả khách hàng ,Số Passport/CMND/Giấy ĐKKD
+toantt_test,STTM_CUSTOMER,DECEASED,CHAR,bảng mo tả khách hàng ,"Trạng thái tài khoản bị ""đóng băng"""
+toantt_test,STTM_CUSTOMER,WHEREABOUTS_UNKNOWN,CHAR,bảng mo tả khách hàng ,Trạng thái khách hàng đã qua đời
+toantt_test,STTM_CUSTOMER,CUSTOMER_CATEGORY,VARCHAR2,bảng mo tả khách hàng ,Thông tin phân biệt tổ
+toantt_test,STTM_CUSTOMER,NO_AC_NO,CHAR,bảng mo tả khách hàng ,Số tài khoản liên quan đến tài khoản hiện tại Hội sở
+toantt_test,STTM_CUSTOMER,RECORD_STAT,CHAR,bảng mo tả khách hàng ,Trạng thái (đóng mở)
+toantt_test,STTM_CUSTOMER,AUTH_STAT,CHAR,bảng mo tả khách hàng ,Trạng thái duyệt
+toantt_test,STTM_CUSTOMER,MOD_NO,NUMBER,bảng mo tả khách hàng ,Số lần chỉnh sửa thông tin khách hàng
+toantt_test,STTM_CUSTOMER,MAKER_ID,VARCHAR2,bảng mo tả khách hàng ,Người làm
+toantt_test,STTM_CUSTOMER,MAKER_DT_STAMP,DATE,bảng mo tả khách hàng ,Thời gian khi người làm tạo hoặc sửa đổi thông tin
+toantt_test,STTM_CUSTOMER,CHECKER_ID,VARCHAR2,bảng mo tả khách hàng ,Người duyệt
+toantt_test,STTM_CUSTOMER,CHECKER_DT_STAMP,DATE,bảng mo tả khách hàng ,Thời gian khi người duyệt tạo hoặc sửa đổi thông tin
+toantt_test,STTM_CUSTOMER,ONCE_AUTH,CHAR,bảng mo tả khách hàng ,Chỉ định trạng thái đã được duyệt một lần
+toantt_test,STTM_CUSTOMER,FX_CUST_CLEAN_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức rủi ro tín dụng ngoại hối (FX)
+toantt_test,STTM_CUSTOMER,OVERALL_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức được cấp
+toantt_test,STTM_CUSTOMER,FX_CLEAN_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức tín dụng ngoại hối
+toantt_test,STTM_CUSTOMER,CREDIT_RATING,VARCHAR2,bảng mo tả khách hàng ,Xếp hạng tín dụng
+toantt_test,STTM_CUSTOMER,REVISION_DATE,DATE,bảng mo tả khách hàng ,Ngày cập nhật thông tin gần nhất
+toantt_test,STTM_CUSTOMER,LIMIT_CCY,VARCHAR2,bảng mo tả khách hàng ,Loại tiền hạn mức được cấp
+toantt_test,STTM_CUSTOMER,CAS_CUST,CHAR,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,LIAB_NODE,VARCHAR2,bảng mo tả khách hàng ,Trạng thái khách hàng trong quản lý tín dụng
+toantt_test,STTM_CUSTOMER,SEC_CUST_CLEAN_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Đầu mối trách nhiệm
+toantt_test,STTM_CUSTOMER,SEC_CLEAN_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức tín dụng bảo đảm
+toantt_test,STTM_CUSTOMER,SEC_CUST_PSTL_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức tín dụng không bảo đảm
+toantt_test,STTM_CUSTOMER,SEC_PSTL_RISK_LIMIT,NUMBER,bảng mo tả khách hàng ,Hạn mức tín dụng liên quan đến các công cụ tài chính
+toantt_test,STTM_CUSTOMER,LIAB_BR,VARCHAR2,bảng mo tả khách hàng ,Hạn mức rủi ro tín dụng
+toantt_test,STTM_CUSTOMER,PAST_DUE_FLAG,VARCHAR2,bảng mo tả khách hàng ,Chỉ nhánh quản lý nghĩa vụ tài chính của khách hàng
+toantt_test,STTM_CUSTOMER,DEFAULT_MEDIA,VARCHAR2,bảng mo tả khách hàng ,Có báo hiệu các khoản quá hạn của khách hàng
+toantt_test,STTM_CUSTOMER,SSN,VARCHAR2,bảng mo tả khách hàng ,Số an sinh xã hội (Social Security Number) nếu áp dụng
+toantt_test,STTM_CUSTOMER,SWIFT_CODE,VARCHAR2,bảng mo tả khách hàng ,Mã định danh ngân hàng SWIFT
+toantt_test,STTM_CUSTOMER,LOC_CODE,VARCHAR2,bảng mo tả khách hàng ,Mã địa điểm/chi nhánh định danh
+toantt_test,STTM_CUSTOMER,SHORT_NAME2,VARCHAR2,bảng mo tả khách hàng ,Số Passport/CMND/Giấy ĐKKD
+toantt_test,STTM_CUSTOMER,UTILITY_PROVIDER,VARCHAR2,bảng mo tả khách hàng ,Nhà cung cấp dịch vụ tiện ích
+toantt_test,STTM_CUSTOMER,UTILITY_PROVIDER_ID,VARCHAR2,bảng mo tả khách hàng ,Mã định danh của nhà cung cấp tiện ích
+toantt_test,STTM_CUSTOMER,RISK_PROFILE,VARCHAR2,bảng mo tả khách hàng ,Hồ sơ rủi ro khách hàng
+toantt_test,STTM_CUSTOMER,DEBTOR_CATEGORY,VARCHAR2,bảng mo tả khách hàng ,Phân loại khách hàng
+toantt_test,STTM_CUSTOMER,FULL_NAME,VARCHAR2,bảng mo tả khách hàng ,Tên khách hàng đầy đủ
+toantt_test,STTM_CUSTOMER,UDF_1,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UDF_2,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UDF_3,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UDF_4,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UDF_5,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,AML_REQUIRED,CHAR,bảng mo tả khách hàng ,Trạng thái yêu cầu kiểm tra chống rửa tiền
+toantt_test,STTM_CUSTOMER,AML_CUSTOMER_GRP,VARCHAR2,bảng mo tả khách hàng ,Nhóm khách hàng theo phân loại chống rửa tiền
+toantt_test,STTM_CUSTOMER,MAILERS_REQUIRED,CHAR,bảng mo tả khách hàng ,Khách hàng có yêu cầu nhận thông báo qua thư/văn bản
+toantt_test,STTM_CUSTOMER,GROUP_CODE,VARCHAR2,bảng mo tả khách hàng ,Mã nhóm khách hàng liên quan
+toantt_test,STTM_CUSTOMER,EXPOSURE_CATEGORY,VARCHAR2,bảng mo tả khách hàng ,Phân loại rủi ro tín dụng hoặc giao dịch
+toantt_test,STTM_CUSTOMER,CUST_CLASSIFICATION,VARCHAR2,bảng mo tả khách hàng ,Phân loại khách hàng
+toantt_test,STTM_CUSTOMER,CIF_STATUS,VARCHAR2,bảng mo tả khách hàng ,Ngày kể từ trạng thái CIF
+toantt_test,STTM_CUSTOMER,CIF_STATUS_SINCE,DATE,bảng mo tả khách hàng ,Ngày kể từ khi trạng thái CIF
+toantt_test,STTM_CUSTOMER,CHARGE_GROUP,VARCHAR2,bảng mo tả khách hàng ,Nhóm phí liên quan đến khách hàng
+toantt_test,STTM_CUSTOMER,INTRODUCER,VARCHAR2,bảng mo tả khách hàng ,Người giới thiệu khách hàng
+toantt_test,STTM_CUSTOMER,CUST_CLG_GROUP,VARCHAR2,bảng mo tả khách hàng ,Trạng thái trơ
+toantt_test,STTM_CUSTOMER,CHK_DIGIT_VALID_REQD,VARCHAR2,bảng mo tả khách hàng ,Yêu cầu xác minh mã số bằng chữ số kiểm tra
+toantt_test,STTM_CUSTOMER,ALG_ID,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,FT_ACTTING_AS_OF,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,UNADVISED,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,TAX_GROUP,VARCHAR2,bảng mo tả khách hàng ,Nhóm thuế
+toantt_test,STTM_CUSTOMER,CONSOL_TAX_CERT_REQD,VARCHAR2,bảng mo tả khách hàng ,Yêu cầu chứng nhận thuế
+toantt_test,STTM_CUSTOMER,INDIVIDUAL_TAX_CERT_REQD,VARCHAR2,bảng mo tả khách hàng ,Yêu cầu chứng nhận thuế cá nhân
+toantt_test,STTM_CUSTOMER,CLS_CCY_ALLOWED,VARCHAR2,bảng mo tả khách hàng ,Loại tiền tệ được phép cho các giao dịch của khách hàng
+toantt_test,STTM_CUSTOMER,CLS_PARTICIPANT,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,FX_NETTING_CUSTOMER,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,RISK_CATEGORY,VARCHAR2,bảng mo tả khách hàng ,Danh mục rủi ro của khách hàng
+toantt_test,STTM_CUSTOMER,FAX_NUMBER,VARCHAR2,bảng mo tả khách hàng ,Số fax của khách hàng
+toantt_test,STTM_CUSTOMER,EXT_REF_NO,VARCHAR2,bảng mo tả khách hàng ,Mã tham chiếu bên ngoài
+toantt_test,STTM_CUSTOMER,CRM_CUSTOMER,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,ISSUER_CUSTOMER,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,TREASURY_CUSTOMER,VARCHAR2,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,CIF_CREATION_DATE,DATE,bảng mo tả khách hàng ,Ngày tạo CIF
+toantt_test,STTM_CUSTOMER,WHT_PCT,NUMBER,bảng mo tả khách hàng ,-
+toantt_test,STTM_CUSTOMER,RP_CUSTOMER,VARCHAR2,bảng mo tả khách hàng ,Khách hàng thuộc nhóm tài sản thực
+toantt_test,STTM_CUSTOMER,GENERATE_MT920,VARCHAR2,bảng mo tả khách hàng ,Chỉ thị có tạo tin nhắn SWIFT MT920

@@ -1,0 +1,111 @@
+{% if ai_suggestions is defined and ai_suggestions and ai_suggestions.satellites %}
+  {% for sat in ai_suggestions.satellites %}
+source_schema: {{ sat.source_schema }}
+source_table: {{ sat.source_table }}
+target_schema: {{ sat.target_schema }}
+target_table: {{ sat.target_table }}
+target_entity_type: {{ sat.target_entity_type }}
+collision_code: {{ sat.collision_code }}
+parent_table: {{ sat.parent_table }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+{% for column in sat.columns %}
+- target: {{ column.target }}
+  dtype: {{ column.dtype }}
+  {% if column.key_type %}key_type: {{ column.key_type }}{% endif %}
+  {% if column.source %}
+  source:
+  {% if column.source is string %}
+  - {{ column.source }}
+  {% elif column.source is iterable and column.source is not mapping %}
+  {% for src in column.source %}
+  - {{ src }}
+  {% endfor %}
+  {% else %}
+    name: {{ column.source.name }}
+    dtype: {{ column.source.dtype }}
+  {% endif %}
+  {% endif %}
+{% endfor %}
+  {% endfor %}
+{% endif %}
+
+{% if ai_suggestions is defined and ai_suggestions and ai_suggestions.link_satellites %}
+  {% for lsat in ai_suggestions.link_satellites %}
+source_schema: {{ lsat.source_schema }}
+source_table: {{ lsat.source_table }}
+target_schema: {{ lsat.target_schema }}
+target_table: {{ lsat.target_table }}
+target_entity_type: {{ lsat.target_entity_type }}
+collision_code: {{ lsat.collision_code }}
+parent_table: {{ lsat.parent_table }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+{% for column in lsat.columns %}
+- target: {{ column.target }}
+  dtype: {{ column.dtype }}
+  {% if column.key_type %}key_type: {{ column.key_type }}{% endif %}
+  {% if column.source %}
+  source:
+  {% if column.source is string %}
+  - {{ column.source }}
+  {% elif column.source is iterable and column.source is not mapping %}
+  {% for src in column.source %}
+  - {{ src }}
+  {% endfor %}
+  {% else %}
+    name: {{ column.source.name }}
+    dtype: {{ column.source.dtype }}
+  {% endif %}
+  {% endif %}
+{% endfor %}
+  {% endfor %}
+{% endif %}
+
+{% if ai_suggestions is not defined or not ai_suggestions or (not ai_suggestions.satellites and not ai_suggestions.link_satellites) %}
+source_schema: {{ source_system if source_system is defined else "DEFAULT" }}
+source_table: {{ table_name }}
+target_schema: INTEGRATION
+target_table: SAT_{{ table_name | upper }}_DETAILS
+target_entity_type: sat
+collision_code: MDM
+parent_table: HUB_{{ table_name | upper }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+- target: DV_HKEY_SAT_{{ table_name | upper }}_DETAILS
+  dtype: raw
+  key_type: hash_key_sat
+- target: DV_HKEY_HUB_{{ table_name | upper }}
+  dtype: raw
+  key_type: hash_key_hub
+  source:
+  {% for column in columns %}
+  {% if column.is_primary_key %}
+  - {{ column.column_name }}
+  {% endif %}
+  {% endfor %}
+- target: DV_HSH_DIFF
+  dtype: raw
+  key_type: hash_diff
+{% for column in columns %}
+{% if not column.is_primary_key and not column.is_foreign_key %}
+- target: {{ column.column_name }}
+  dtype: {{ column.data_type }}
+  source:
+    name: {{ column.column_name }}
+    dtype: {{ column.data_type }}
+{% endif %}
+{% endfor %}
+{% endif %}

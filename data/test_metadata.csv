@@ -1,0 +1,6 @@
+schema_name,table_name,column_name,column_data_type,table_description,column_description
+public,customers,id,integer,Bảng khách hàng,ID khách hàng
+public,customers,name,varchar,Bảng khách hàng,Tên khách hàng
+public,customers,email,varchar,Bảng khách hàng,Email khách hàng
+public,orders,id,integer,Bảng đơn hàng,ID đơn hàng
+public,orders,customer_id,integer,Bảng đơn hàng,ID khách hàng (FK)

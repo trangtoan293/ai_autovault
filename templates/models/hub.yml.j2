@@ -1,0 +1,68 @@
+{% if ai_suggestions is defined and ai_suggestions and ai_suggestions.hubs %}
+  {% for hub in ai_suggestions.hubs %}
+source_schema: {{ hub.source_schema }}
+source_table: {{ hub.source_table }}
+target_schema: {{ hub.target_schema }}
+target_table: {{ hub.target_table }}
+target_entity_type: {{ hub.target_entity_type }}
+collision_code: {{ hub.collision_code }}
+description: {{ hub.description }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+{% for column in hub.columns %}
+- target: {{ column.target }}
+  dtype: {{ column.dtype }}
+  {% if column.key_type %}key_type: {{ column.key_type }}{% endif %}
+  {% if column.source %}
+  source:
+  {% if column.source is string %}
+  - {{ column.source }}
+  {% elif column.source is iterable and column.source is not mapping %}
+  {% for src in column.source %}
+  - {{ src }}
+  {% endfor %}
+  {% else %}
+    name: {{ column.source.name }}
+    dtype: {{ column.source.dtype }}
+  {% endif %}
+  {% endif %}
+{% endfor %}
+  {% endfor %}
+{% else %}
+source_schema: {{ source_system if source_system is defined else "DEFAULT" }}
+source_table: {{ table_name }}
+target_schema: INTEGRATION
+target_table: HUB_{{ table_name | upper }}
+target_entity_type: hub
+collision_code: MDM
+description: Hub for {{ table_name }}
+metadata:
+  created_at: '{{ now().isoformat() }}'
+  version: 1.0.0
+  validation_status: valid
+  validation_warnings: null
+columns:
+- target: DV_HKEY_HUB_{{ table_name | upper }}
+  dtype: raw
+  key_type: hash_key_hub
+  source:
+  {% for column in columns %}
+  {% if column.is_primary_key %}
+  - {{ column.column_name }}
+  {% endif %}
+  {% endfor %}
+{% for column in columns %}
+{% if column.is_primary_key %}
+- target: {{ column.column_name }}
+  dtype: {{ column.data_type }}
+  key_type: biz_key
+  source:
+    name: {{ column.column_name }}
+    dtype: {{ column.data_type }}
+{% endif %}
+{% endfor %}
+{% endif %}
