@@ -24,16 +24,15 @@ class ModelConfig(BaseModel):
     """Configuration for model generation"""
     table_name: str = Field(..., description="Name of the table to generate model for")
     model_type: Optional[str] = Field(None, description="Type of model to generate (hub, link, satellite, auto). If None or 'auto', all appropriate types will be determined automatically")
-    use_ai_enhancement: bool = Field(False, description="Use AI to enhance the model")
+    use_ai_enhancement: bool = Field(True, description="Use AI to enhance the model")
     business_keys: Optional[List[str]] = Field(None, description="Columns to use as business keys")
-    include_columns: Optional[List[str]] = Field(None, description="Columns to include in the model")
-    exclude_columns: Optional[List[str]] = Field(None, description="Columns to exclude from the model")
     additional_config: Optional[Dict[str, Any]] = Field(None, description="Additional configuration")
+    save_to_database: bool = Field(False, description="Whether to save generated models to database")
 
 
 class ModelGenerationResponse(ApiResponse):
     """Response model for model generation"""
-    model_yaml_a: str
+    model_yaml: str
     table_name: str
     model_type: str
     metadata_count: int

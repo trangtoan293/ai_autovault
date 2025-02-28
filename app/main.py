@@ -10,7 +10,7 @@ from redis.asyncio import Redis
 from fastapi_cache import FastAPICache
 
 from fastapi_cache.backends.redis import RedisBackend
-from app.api.endpoints import metadata, models, dbt
+from app.api.endpoints import metadata, dbt, models_enhanced
 from app.core.config import settings
 from app.core.security import authenticate_user, create_access_token, fake_users_db
 from app.api.error_handlers import setup_exception_handlers
@@ -56,7 +56,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(metadata.router, prefix="/api/metadata", tags=["metadata"])
-app.include_router(models.router, prefix="/api/models", tags=["models"])
+app.include_router(models_enhanced.router, prefix="/api/models", tags=["models"])
 app.include_router(dbt.router, prefix="/api/dbt", tags=["dbt"])
 
 # Setup exception handlers
@@ -136,4 +136,3 @@ if __name__ == "__main__":
     import uvicorn
     logger.info("Starting server...")
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
-

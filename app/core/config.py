@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     
     # LLM Configuration
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")  # groq, openai, etc.
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq") 
     LLM_MODEL: str = os.getenv("LLM_MODEL", "llama3-8b-8192")
     
     class Config:
