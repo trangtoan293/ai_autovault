@@ -25,6 +25,8 @@ Một ứng dụng tự động hóa quá trình mô hình hóa dữ liệu (Dat
 - **Xử lý Metadata**: Tự động trích xuất metadata từ file CSV/Excel và lưu trữ vào cơ sở dữ liệu
 - **Mô hình hóa dữ liệu với AI**: Sử dụng AI để tạo mô hình Data Vault (Hub, Link, Satellite) dựa trên metadata
 - **Quản lý dự án DBT**: Khởi tạo, chạy, kiểm thử và triển khai dự án DBT
+- **Knowledge Graph**: Biểu diễn metadata và lineage trong graph database (Neo4j) và truy vấn bằng ngôn ngữ tự nhiên
+- **Data Lineage**: Theo dõi dòng chảy dữ liệu ở cấp table và column thông qua knowledge graph
 - **Tích hợp Git**: Quản lý phiên bản của mô hình dữ liệu và tích hợp với GitLab
 - **API RESTful**: API đầy đủ để tích hợp với các hệ thống khác
 - **Authentication & Authorization**: Bảo mật API với JWT và role-based access control
@@ -83,6 +85,7 @@ data_modeling_automation/
 - Python 3.12
 - Redis (cho caching)
 - PostgreSQL (hoặc SQLite cho development)
+- Neo4j (cho Knowledge Graph)
 - Git
 - DBT (Data Build Tool)
 
@@ -179,6 +182,53 @@ Tất cả API endpoints (ngoại trừ health check và login) yêu cầu JWT a
 - `GET /api/dbt/docs`: Tạo DBT documentation
 - `POST /api/dbt/deploy`: Triển khai mô hình (chỉ admin)
 
+#### Knowledge Graph
+- `POST /api/knowledge-graph/build`: Xây dựng knowledge graph từ metadata
+- `GET /api/knowledge-graph/lineage/table/{table_name}`: Lấy data lineage cấp table
+- `GET /api/knowledge-graph/lineage/column/{table_name}/{column_name}`: Lấy data lineage cấp column
+- `GET /api/knowledge-graph/search`: Tìm kiếm metadata theo từ khóa
+- `POST /api/knowledge-graph/query`: Truy vấn knowledge graph bằng ngôn ngữ tự nhiên
+
+## Knowledge Graph Module
+
+## Tổng quan
+
+Knowledge Graph module cung cấp khả năng biểu diễn metadata, data lineage, và các thành phần Data Vault dưới dạng đồ thị tri thức (knowledge graph). Module này sử dụng Neo4j để lưu trữ và truy vấn đồ thị, đồng thời tích hợp với LLM để cho phép truy vấn bằng ngôn ngữ tự nhiên.
+
+## Kiến trúc
+
+Module được tổ chức thành các thành phần sau:
+
+- **Models**: Định nghĩa cấu trúc của các node và relationships trong đồ thị
+- **Services**: Cung cấp các dịch vụ xây dựng và truy vấn đồ thị
+- **API**: Cung cấp các endpoints REST để tương tác với đồ thị
+
+## Các thành phần chính
+
+### Node Types (Loại node)
+
+- **SourceSystem**: Thông tin về hệ thống nguồn dữ liệu
+- **Schema**: Schema cơ sở dữ liệu
+- **Table**: Bảng trong cơ sở dữ liệu
+- **Column**: Cột trong bảng
+- **DataVaultComponent**: Thành phần Data Vault (hub, link, satellite)
+
+### Relationship Types (Loại relationship)
+
+- **CONTAINS**: Quan hệ cha-con (SourceSystem → Schema → Table → Column)
+- **MAPPED_TO**: Biểu diễn phép biến đổi dữ liệu giữa các cột
+- **REFERENCES**: Quan hệ khóa ngoại
+- **SOURCE_OF**: Cột nguồn cho thành phần Data Vault
+- **DERIVED_FROM**: Được dẫn xuất từ (cho cột có biến đổi)
+- **PART_OF**: Quan hệ thuộc về
+
+### Services (Dịch vụ)
+
+- **GraphConnector**: Kết nối đến Neo4j và thực hiện các thao tác cơ bản
+- **GraphBuilder**: Xây dựng đồ thị từ metadata và các thành phần Data Vault
+- **LLMService**: Tích hợp LLM để truy vấn đồ thị bằng ngôn ngữ tự nhiên
+
+
 ### Ví dụ về quy trình làm việc:
 
 1. Upload metadata:
@@ -197,7 +247,19 @@ Tất cả API endpoints (ngoại trừ health check và login) yêu cầu JWT a
      -d '{"table_name":"customers","model_type":"hub","use_ai_enhancement":true}'
    ```
 
-3. Initialize DBT project:
+3. Xây dựng Knowledge Graph:
+   ```bash
+   curl -X POST "http://localhost:8000/api/knowledge-graph/build" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+   ```
+
+4. Truy vấn Data Lineage:
+   ```bash
+   curl -X GET "http://localhost:8000/api/knowledge-graph/lineage/table/customers" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+   ```
+
+5. Initialize DBT project:
    ```bash
    curl -X POST "http://localhost:8000/api/dbt/init" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -205,7 +267,7 @@ Tất cả API endpoints (ngoại trừ health check và login) yêu cầu JWT a
      -d '{"repo_url":"https://gitlab.com/your-username/your-repo.git"}'
    ```
 
-4. Run DBT models:
+6. Run DBT models:
    ```bash
    curl -X POST "http://localhost:8000/api/dbt/run" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \

@@ -562,10 +562,10 @@ Think step by step and provide the result in this specific JSON format:
             hub_yaml = {
                 "source_schema": source_system,
                 "source_table": table_name,
-                "target_schema": "INTEGRATION",
+                "target_schema": hub.get("target_schema", settings.DEFAULT_TARGET_SCHEMA),
                 "target_table": hub["name"],
                 "target_entity_type": "hub",
-                "collision_code": "MDM",
+                "collision_code": hub.get("collision_code", settings.DEFAULT_COLLISION_CODE),
                 "description": hub["description"],
                 "metadata": {
                     "created_at": datetime.now().isoformat(),
@@ -577,6 +577,7 @@ Think step by step and provide the result in this specific JSON format:
             # Add hash key column
             hub_yaml["columns"].append({
                 "target": f"DV_HKEY_{hub['name']}",
+                "description": f"Hash key for {hub['name']} driven by {hub["business_keys"]}",
                 "dtype": "raw",
                 "key_type": "hash_key_hub",
                 "source": hub["business_keys"]
@@ -593,7 +594,8 @@ Think step by step and provide the result in this specific JSON format:
                     "key_type": "biz_key",
                     "source": {
                         "name": col_metadata["name"],
-                        "dtype": col_metadata["dtype"]
+                        "dtype": col_metadata["dtype"],
+                        "description": col_metadata["description"]
                     }
                 })
             
@@ -613,10 +615,10 @@ Think step by step and provide the result in this specific JSON format:
             link_yaml = {
                 "source_schema": source_system,
                 "source_table": table_name,
-                "target_schema": "INTEGRATION",
+                "target_schema": link.get("target_schema", settings.DEFAULT_TARGET_SCHEMA),
                 "target_table": link["name"],
                 "target_entity_type": "lnk",
-                "collision_code": "MDM",
+                "collision_code": link.get("collision_code", settings.DEFAULT_COLLISION_CODE),
                 "description": link["description"],
                 "metadata": {
                     "created_at": datetime.now().isoformat(),
@@ -628,6 +630,7 @@ Think step by step and provide the result in this specific JSON format:
             # Add hash key column for the link
             link_yaml["columns"].append({
                 "target": f"DV_HKEY_{link['name']}",
+                "description": f"Hash key for {link['name']} driven by {link["business_keys"]}",
                 "dtype": "raw",
                 "key_type": "hash_key_lnk",
                 "source": link["business_keys"]
@@ -663,10 +666,11 @@ Think step by step and provide the result in this specific JSON format:
             sat_yaml = {
                 "source_schema": source_system,
                 "source_table": sat["source_table"],
-                "target_schema": "INTEGRATION",
+                "target_schema": sat.get("target_schema", settings.DEFAULT_TARGET_SCHEMA),
                 "target_table": sat["name"],
                 "target_entity_type": "sat",
-                "collision_code": "MDM",
+                "collision_code": sat.get("collision_code", settings.DEFAULT_COLLISION_CODE),
+                "description": sat.get("description", f"Satellite for {sat['hub']}"),
                 "parent_table": sat["hub"],
                 "metadata": {
                     "created_at": datetime.now().isoformat(),
@@ -678,6 +682,7 @@ Think step by step and provide the result in this specific JSON format:
             # Add hash key columns
             sat_yaml["columns"].append({
                 "target": f"DV_HKEY_{sat['name']}",
+                "description": f"Hash key for {sat['name']} driven by {sat["business_keys"]} and data_vault_system columns",
                 "dtype": "raw",
                 "key_type": "hash_key_sat"
             })
@@ -691,6 +696,7 @@ Think step by step and provide the result in this specific JSON format:
             
             sat_yaml["columns"].append({
                 "target": "DV_HSH_DIFF",
+                "description": f"Combination of hash values from attributes in {sat['descriptive_attrs']}",
                 "dtype": "raw",
                 "key_type": "hash_diff"
             })
@@ -703,9 +709,11 @@ Think step by step and provide the result in this specific JSON format:
                 sat_yaml["columns"].append({
                     "target": attr,
                     "dtype": col_metadata["dtype"],
+                    "description": col_metadata["description"],
                     "source": {
                         "name": col_metadata["name"],
-                        "dtype": col_metadata["dtype"]
+                        "dtype": col_metadata["dtype"],
+                        "description": col_metadata["description"]
                     }
                 })
             
@@ -730,10 +738,11 @@ Think step by step and provide the result in this specific JSON format:
             lsat_yaml = {
                 "source_schema": source_system,
                 "source_table": lsat["source_table"],
-                "target_schema": "INTEGRATION",
+                "target_schema": lsat.get("target_schema", settings.DEFAULT_TARGET_SCHEMA),
                 "target_table": lsat["name"],
                 "target_entity_type": "lsat",
-                "collision_code": "MDM",
+                "collision_code": lsat.get("collision_code", settings.DEFAULT_COLLISION_CODE),
+                "description": lsat.get("description", f"Link Satellite for {lsat['link']}"),
                 "parent_table": lsat["link"],
                 "metadata": {
                     "created_at": datetime.now().isoformat(),
@@ -745,6 +754,7 @@ Think step by step and provide the result in this specific JSON format:
             # Add hash key columns
             lsat_yaml["columns"].append({
                 "target": f"DV_HKEY_{lsat['name']}",
+                "description": f"Hash key for {lsat['name']} driven by {lsat["business_keys"]} and data_vault_system columns",
                 "dtype": "raw",
                 "key_type": "hash_key_sat"
             })
@@ -758,6 +768,7 @@ Think step by step and provide the result in this specific JSON format:
             
             lsat_yaml["columns"].append({
                 "target": "DV_HSH_DIFF",
+                "description": f"Combination of hash values from attributes in {lsat['descriptive_attrs']}",
                 "dtype": "raw",
                 "key_type": "hash_diff"
             })
@@ -770,9 +781,11 @@ Think step by step and provide the result in this specific JSON format:
                 lsat_yaml["columns"].append({
                     "target": attr,
                     "dtype": col_metadata["dtype"],
+                    "description": col_metadata["description"],
                     "source": {
                         "name": col_metadata["name"],
-                        "dtype": col_metadata["dtype"]
+                        "dtype": col_metadata["dtype"],
+                        "description": col_metadata["description"]
                     }
                 })
             

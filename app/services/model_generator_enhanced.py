@@ -2,21 +2,9 @@
 Enhanced Data Vault 2.0 model generation with database storage
 Combines automatic and manual input approaches with unified storage
 """
-import os
-import json
-import re
-from typing import List, Dict, Any, Optional, Union, Set
+from typing import List, Dict, Any
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from tenacity import retry, stop_after_attempt, wait_exponential
-from jinja2 import Environment, FileSystemLoader
-import pandas as pd
-from datetime import datetime
-
-# LangChain imports
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-
 from app.core.config import settings
 from app.core.logging import logger
 from app.models.response import ModelGenerationResponse, ModelConfig
@@ -24,9 +12,6 @@ from app.models.data_vault import (
     ManualComponentInput, HubComponent, LinkComponent, 
     SatelliteComponent, LinkSatelliteComponent, SimpleManualInput
 )
-from app.utils.template_utils import render_template
-from app.utils.yaml_utils import dict_to_yaml
-from app.services.metadata_store import MetadataService
 from app.services.data_vault_store import DataVaultStoreService
 from app.services.model_generator import ModelGeneratorService, DataVaultModelState
 
@@ -95,9 +80,26 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                     description=hub.get('description'),
                                     business_keys=hub.get('business_keys', []),
                                     source_tables=hub.get('source_tables', []),
+                                    source_schema=source_system,
+                                    source_table=table_name,
+                                    source_columns=hub.get('source_columns', []),
+                                    target_schema=hub.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    target_table=hub.get('name'),
+                                    target_columns=hub.get('target_columns', []),
+                                    collision_code=hub.get('collision_code', settings.DEFAULT_COLLISION_CODE),
+                                    lineage_mapping=hub.get('lineage_mapping'),
+                                    transformation_logic=hub.get('transformation_logic'),
                                     yaml_content=model_yaml
                                 )
-                                self.data_vault_store.save_component(db, hub_component, source_system, table_name)
+                                self.data_vault_store.save_component(
+                                    db, 
+                                    hub_component, 
+                                    source_system, 
+                                    source_schema=source_system,
+                                    source_table=table_name,
+                                    target_schema=hub.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    collision_code=hub.get('collision_code', settings.DEFAULT_COLLISION_CODE)
+                                )
                                 logger.debug(f"Saved hub component to database: {hub.get('name', 'unknown')}")
                         except Exception as e:
                             logger.error(f"Error processing hub {hub.get('name', 'unknown')}: {str(e)}", exc_info=True)
@@ -126,10 +128,27 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                     description=link.get('description'),
                                     business_keys=link.get('business_keys', []),
                                     source_tables=link.get('source_tables', []),
+                                    source_schema=source_system,
+                                    source_table=table_name,
+                                    source_columns=link.get('source_columns', []),
                                     related_hubs=link.get('related_hubs', []),
+                                    target_schema=link.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    target_table=link.get('name'),
+                                    target_columns=link.get('target_columns', []),
+                                    collision_code=link.get('collision_code', settings.DEFAULT_COLLISION_CODE),
+                                    lineage_mapping=link.get('lineage_mapping'),
+                                    transformation_logic=link.get('transformation_logic'),
                                     yaml_content=model_yaml
                                 )
-                                self.data_vault_store.save_component(db, link_component, source_system, table_name)
+                                self.data_vault_store.save_component(
+                                    db, 
+                                    link_component, 
+                                    source_system, 
+                                    source_schema=source_system,
+                                    source_table=table_name,
+                                    target_schema=link.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    collision_code=link.get('collision_code', settings.DEFAULT_COLLISION_CODE)
+                                )
                                 logger.debug(f"Saved link component to database: {link.get('name', 'unknown')}")
                         except Exception as e:
                             logger.error(f"Error processing link {link.get('name', 'unknown')}: {str(e)}", exc_info=True)
@@ -158,11 +177,27 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                     description=f"Satellite for {sat.get('hub')}",
                                     business_keys=sat.get('business_keys', []),
                                     hub=sat.get('hub'),
+                                    source_tables=[sat.get('source_table', table_name)],
+                                    source_schema=source_system,
                                     source_table=sat.get('source_table', table_name),
-                                    descriptive_attrs=sat.get('descriptive_attrs', []),
+                                    source_columns=[],
+                                    target_schema=sat.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    target_table=sat.get('name'),
+                                    target_columns=sat.get('target_columns', []),
+                                    collision_code=sat.get('collision_code', settings.DEFAULT_COLLISION_CODE),
+                                    lineage_mapping=sat.get('lineage_mapping'),
+                                    transformation_logic=sat.get('transformation_logic'),
                                     yaml_content=model_yaml
                                 )
-                                self.data_vault_store.save_component(db, sat_component, source_system, table_name)
+                                self.data_vault_store.save_component(
+                                    db, 
+                                    sat_component, 
+                                    source_system, 
+                                    source_schema=source_system,
+                                    source_table=sat.get('source_table', table_name),
+                                    target_schema=sat.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    collision_code=sat.get('collision_code', settings.DEFAULT_COLLISION_CODE)
+                                )
                                 logger.debug(f"Saved satellite component to database: {sat.get('name', 'unknown')}")
                         except Exception as e:
                             logger.error(f"Error processing satellite {sat.get('name', 'unknown')}: {str(e)}", exc_info=True)
@@ -191,11 +226,27 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                     description=f"Link Satellite for {lsat.get('link')}",
                                     business_keys=lsat.get('business_keys', []),
                                     link=lsat.get('link'),
+                                    source_tables=[lsat.get('source_table', table_name)],
+                                    source_schema=source_system,
                                     source_table=lsat.get('source_table', table_name),
-                                    descriptive_attrs=lsat.get('descriptive_attrs', []),
+                                    source_columns=[],
+                                    target_schema=lsat.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    target_table=lsat.get('name'),
+                                    target_columns=lsat.get('target_columns', []),
+                                    collision_code=lsat.get('collision_code', settings.DEFAULT_COLLISION_CODE),
+                                    lineage_mapping=lsat.get('lineage_mapping'),
+                                    transformation_logic=lsat.get('transformation_logic'),
                                     yaml_content=model_yaml
                                 )
-                                self.data_vault_store.save_component(db, lsat_component, source_system, table_name)
+                                self.data_vault_store.save_component(
+                                    db, 
+                                    lsat_component, 
+                                    source_system, 
+                                    source_schema=source_system,
+                                    source_table=lsat.get('source_table', table_name),
+                                    target_schema=lsat.get('target_schema', settings.DEFAULT_TARGET_SCHEMA),
+                                    collision_code=lsat.get('collision_code', settings.DEFAULT_COLLISION_CODE)
+                                )
                                 logger.debug(f"Saved link satellite component to database: {lsat.get('name', 'unknown')}")
                         except Exception as e:
                             logger.error(f"Error processing link satellite {lsat.get('name', 'unknown')}: {str(e)}", exc_info=True)
@@ -237,187 +288,7 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
         except Exception as e:
             logger.error(f"Error generating model from source: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Error generating model from source: {str(e)}")
-    
-    async def generate_models_from_manual_input(
-        self, 
-        input_data: ManualComponentInput, 
-        db: Session
-    ) -> ModelGenerationResponse:
-        """
-        Generate Data Vault models from manual input
-        """
-        try:
-            logger.info(f"Generating models from manual input for {input_data.table_name}")
-            
-            # Get metadata for the specified source system and table
-            # This is needed for column metadata when generating YAML
-            metadata_entries = self.metadata_service.get_metadata_by_source_and_table(
-                db, input_data.source_system, input_data.table_name
-            )
-            
-            if not metadata_entries:
-                logger.warning(f"No metadata found for source system {input_data.source_system} and table {input_data.table_name}")
-                # Continue without metadata, but warn that column details may not be complete
-                self.state.warnings.append(f"No metadata found for source system {input_data.source_system} and table {input_data.table_name}. Column details may be incomplete.")
-            
-            # Generate YAML for each component type
-            generated_models = []
-            saved_components = []
-            
-            # Process hubs
-            if input_data.hubs:
-                for hub in input_data.hubs:
-                    try:
-                        logger.debug(f"Processing hub: {hub.name}")
-                        hub_yaml = self._generate_hub_yaml(
-                            {"name": hub.name, 
-                             "business_keys": hub.business_keys,
-                             "description": hub.description or f"Hub for {hub.name}",
-                             "source_tables": hub.source_tables},
-                            input_data.source_system, 
-                            input_data.table_name, 
-                            metadata_entries or []
-                        )
-                        
-                        if hub_yaml:
-                            # Update the component with generated YAML
-                            hub.yaml_content = hub_yaml
-                            generated_models.append(hub_yaml)
-                            
-                            # Save to database
-                            saved_component = self.data_vault_store.save_component(
-                                db, hub, input_data.source_system, input_data.table_name
-                            )
-                            saved_components.append(saved_component)
-                            
-                    except Exception as e:
-                        logger.error(f"Error processing hub {hub.name}: {str(e)}", exc_info=True)
-                        self.state.warnings.append(f"Error processing hub {hub.name}: {str(e)}")
-            
-            # Process links
-            if input_data.links:
-                for link in input_data.links:
-                    try:
-                        logger.debug(f"Processing link: {link.name}")
-                        link_yaml = self._generate_link_yaml(
-                            {"name": link.name, 
-                             "business_keys": link.business_keys,
-                             "description": link.description or f"Link for {link.name}",
-                             "source_tables": link.source_tables,
-                             "related_hubs": link.related_hubs},
-                            input_data.source_system, 
-                            input_data.table_name, 
-                            metadata_entries or []
-                        )
-                        
-                        if link_yaml:
-                            # Update the component with generated YAML
-                            link.yaml_content = link_yaml
-                            generated_models.append(link_yaml)
-                            
-                            # Save to database
-                            saved_component = self.data_vault_store.save_component(
-                                db, link, input_data.source_system, input_data.table_name
-                            )
-                            saved_components.append(saved_component)
-                            
-                    except Exception as e:
-                        logger.error(f"Error processing link {link.name}: {str(e)}", exc_info=True)
-                        self.state.warnings.append(f"Error processing link {link.name}: {str(e)}")
-            
-            # Process satellites
-            if input_data.satellites:
-                for sat in input_data.satellites:
-                    try:
-                        logger.debug(f"Processing satellite: {sat.name}")
-                        satellite_yaml = self._generate_satellite_yaml(
-                            {"name": sat.name, 
-                             "business_keys": sat.business_keys,
-                             "hub": sat.hub,
-                             "source_table": sat.source_table,
-                             "descriptive_attrs": sat.descriptive_attrs},
-                            input_data.source_system, 
-                            input_data.table_name, 
-                            metadata_entries or []
-                        )
-                        
-                        if satellite_yaml:
-                            # Update the component with generated YAML
-                            sat.yaml_content = satellite_yaml
-                            generated_models.append(satellite_yaml)
-                            
-                            # Save to database
-                            saved_component = self.data_vault_store.save_component(
-                                db, sat, input_data.source_system, input_data.table_name
-                            )
-                            saved_components.append(saved_component)
-                            
-                    except Exception as e:
-                        logger.error(f"Error processing satellite {sat.name}: {str(e)}", exc_info=True)
-                        self.state.warnings.append(f"Error processing satellite {sat.name}: {str(e)}")
-            
-            # Process link satellites
-            if input_data.link_satellites:
-                for lsat in input_data.link_satellites:
-                    try:
-                        logger.debug(f"Processing link satellite: {lsat.name}")
-                        link_satellite_yaml = self._generate_link_satellite_yaml(
-                            {"name": lsat.name, 
-                             "business_keys": lsat.business_keys,
-                             "link": lsat.link,
-                             "source_table": lsat.source_table,
-                             "descriptive_attrs": lsat.descriptive_attrs},
-                            input_data.source_system, 
-                            input_data.table_name, 
-                            metadata_entries or []
-                        )
-                        
-                        if link_satellite_yaml:
-                            # Update the component with generated YAML
-                            lsat.yaml_content = link_satellite_yaml
-                            generated_models.append(link_satellite_yaml)
-                            
-                            # Save to database
-                            saved_component = self.data_vault_store.save_component(
-                                db, lsat, input_data.source_system, input_data.table_name
-                            )
-                            saved_components.append(saved_component)
-                            
-                    except Exception as e:
-                        logger.error(f"Error processing link satellite {lsat.name}: {str(e)}", exc_info=True)
-                        self.state.warnings.append(f"Error processing link satellite {lsat.name}: {str(e)}")
-            
-            # If no models were generated, return a message
-            if not generated_models:
-                logger.warning(f"No models could be generated for {input_data.table_name}")
-                return ModelGenerationResponse(
-                    message="ERROR",
-                    model_yaml=f"# No models could be generated for {input_data.table_name}",
-                    table_name=input_data.table_name,
-                    model_type="manual",
-                    metadata_count=len(metadata_entries) if metadata_entries else 0,
-                    warnings=self.state.warnings
-                )
-            
-            # Combine all generated models
-            combined_yaml = "\n---\n".join(generated_models)
-            
-            logger.info(f"Generated {len(generated_models)} models for {input_data.table_name} from manual input")
-            
-            model_result = ModelGenerationResponse(
-                message="DONE",
-                model_yaml=combined_yaml,
-                table_name=input_data.table_name,
-                model_type="manual",
-                metadata_count=len(metadata_entries) if metadata_entries else 0,
-                warnings=self.state.warnings
-            )
-            return model_result
-
-        except Exception as e:
-            logger.error(f"Error generating models from manual input: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=f"Error generating models from manual input: {str(e)}")
-
+        
 
     async def generate_models_from_simple_input(
         self, 
@@ -467,12 +338,27 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                 description=hub.description or f"Hub for {hub.name}",
                                 business_keys=hub.business_keys,
                                 source_tables=hub.source_tables,
+                                source_schema=hub.source_schema or source_system,
+                                source_table=hub.source_table or table_name,
+                                source_columns=hub.source_columns or [],
+                                target_schema=hub.target_schema,
+                                target_table=hub.target_table or hub.name,
+                                target_columns=hub.target_columns or [],
+                                collision_code=hub.collision_code,
+                                lineage_mapping=hub.lineage_mapping,
+                                transformation_logic=hub.transformation_logic,
                                 yaml_content=hub_yaml
                             )
                             
                             # Save to database
                             self.data_vault_store.save_component(
-                                db, hub_component, source_system, table_name
+                                db, 
+                                hub_component, 
+                                source_system, 
+                                source_schema=hub.source_schema or source_system,
+                                source_table=hub.source_table or table_name,
+                                target_schema=hub.target_schema,
+                                collision_code=hub.collision_code
                             )
                             logger.debug(f"Saved hub component to database: {hub.name}")
                             
@@ -502,13 +388,28 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                 description=link.description or f"Link for {link.name}",
                                 business_keys=link.business_keys,
                                 source_tables=link.source_tables,
+                                source_schema=link.source_schema or source_system,
+                                source_table=link.source_table or table_name,
+                                source_columns=link.source_columns or [],
                                 related_hubs=link.related_hubs,
+                                target_schema=link.target_schema,
+                                target_table=link.target_table or link.name,
+                                target_columns=link.target_columns or [],
+                                collision_code=link.collision_code,
+                                lineage_mapping=link.lineage_mapping,
+                                transformation_logic=link.transformation_logic,
                                 yaml_content=link_yaml
                             )
                             
                             # Save to database
                             self.data_vault_store.save_component(
-                                db, link_component, source_system, table_name
+                                db, 
+                                link_component, 
+                                source_system, 
+                                source_schema=link.source_schema or source_system,
+                                source_table=link.source_table or table_name,
+                                target_schema=link.target_schema,
+                                collision_code=link.collision_code
                             )
                             logger.debug(f"Saved link component to database: {link.name}")
                             
@@ -538,14 +439,28 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                 description=f"Satellite for {sat.hub}",
                                 business_keys=sat.business_keys,
                                 hub=sat.hub,
+                                source_tables=[sat.source_table],
+                                source_schema=sat.source_schema or source_system,
                                 source_table=sat.source_table,
-                                descriptive_attrs=sat.descriptive_attrs,
+                                source_columns=sat.source_columns ,
+                                target_schema=sat.target_schema,
+                                target_table=sat.target_table or sat.name,
+                                target_columns=sat.target_columns or [],
+                                collision_code=sat.collision_code,
+                                lineage_mapping=sat.lineage_mapping,
+                                transformation_logic=sat.transformation_logic,
                                 yaml_content=satellite_yaml
                             )
                             
                             # Save to database
                             self.data_vault_store.save_component(
-                                db, sat_component, source_system, table_name
+                                db, 
+                                sat_component, 
+                                source_system, 
+                                source_schema=sat.source_schema or source_system,
+                                source_table=sat.source_table,
+                                target_schema=sat.target_schema,
+                                collision_code=sat.collision_code
                             )
                             logger.debug(f"Saved satellite component to database: {sat.name}")
                             
@@ -575,14 +490,28 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                                 description=f"Link Satellite for {lsat.link}",
                                 business_keys=lsat.business_keys,
                                 link=lsat.link,
+                                source_tables=[lsat.source_table],
+                                source_schema=lsat.source_schema or source_system,
                                 source_table=lsat.source_table,
-                                descriptive_attrs=lsat.descriptive_attrs,
+                                source_columns=lsat.source_columns ,
+                                target_schema=lsat.target_schema,
+                                target_table=lsat.target_table or lsat.name,
+                                target_columns=lsat.target_columns or [],
+                                collision_code=lsat.collision_code,
+                                lineage_mapping=lsat.lineage_mapping,
+                                transformation_logic=lsat.transformation_logic,
                                 yaml_content=link_satellite_yaml
                             )
                             
                             # Save to database
                             self.data_vault_store.save_component(
-                                db, lsat_component, source_system, table_name
+                                db, 
+                                lsat_component, 
+                                source_system, 
+                                source_schema=lsat.source_schema or source_system,
+                                source_table=lsat.source_table,
+                                target_schema=lsat.target_schema,
+                                collision_code=lsat.collision_code
                             )
                             logger.debug(f"Saved link satellite component to database: {lsat.name}")
                             
@@ -650,6 +579,15 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                     "name": component.name,
                     "business_keys": component.business_keys,
                     "source_tables": component.source_tables,
+                    "source_schema": component.source_schema,
+                    "source_table": component.source_table or component.table_name,
+                    "source_columns": component.source_columns,
+                    "target_schema": component.target_schema,
+                    "target_table": component.target_table or component.name,
+                    "target_columns": component.target_columns,
+                    "collision_code": component.collision_code,
+                    "lineage_mapping": component.lineage_mapping,
+                    "transformation_logic": component.transformation_logic,
                     "description": component.description,
                     "yaml_content": component.yaml_content
                 })
@@ -659,7 +597,16 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                     "name": component.name,
                     "business_keys": component.business_keys,
                     "source_tables": component.source_tables,
+                    "source_schema": component.source_schema,
+                    "source_table": component.source_table or component.table_name,
+                    "source_columns": component.source_columns,
                     "related_hubs": component.related_hubs,
+                    "target_schema": component.target_schema,
+                    "target_table": component.target_table or component.name,
+                    "target_columns": component.target_columns,
+                    "collision_code": component.collision_code,
+                    "lineage_mapping": component.lineage_mapping,
+                    "transformation_logic": component.transformation_logic,
                     "description": component.description,
                     "yaml_content": component.yaml_content
                 })
@@ -669,8 +616,16 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                     "name": component.name,
                     "business_keys": component.business_keys,
                     "hub": component.hub_name,
-                    "source_table": component.table_name,
-                    "descriptive_attrs": component.descriptive_attrs,
+                    "source_tables": component.source_tables,
+                    "source_schema": component.source_schema,
+                    "source_table": component.source_table or component.table_name,
+                    "source_columns": component.source_columns,
+                    "target_schema": component.target_schema,
+                    "target_table": component.target_table or component.name,
+                    "target_columns": component.target_columns,
+                    "collision_code": component.collision_code,
+                    "lineage_mapping": component.lineage_mapping,
+                    "transformation_logic": component.transformation_logic,
                     "description": component.description,
                     "yaml_content": component.yaml_content
                 })
@@ -680,8 +635,16 @@ class EnhancedModelGeneratorService(ModelGeneratorService):
                     "name": component.name,
                     "business_keys": component.business_keys,
                     "link": component.link_name,
-                    "source_table": component.table_name,
-                    "descriptive_attrs": component.descriptive_attrs,
+                    "source_tables": component.source_tables,
+                    "source_schema": component.source_schema,
+                    "source_table": component.source_table or component.table_name,
+                    "source_columns": component.source_columns,
+                    "target_schema": component.target_schema,
+                    "target_table": component.target_table or component.name,
+                    "target_columns": component.target_columns,
+                    "collision_code": component.collision_code,
+                    "lineage_mapping": component.lineage_mapping,
+                    "transformation_logic": component.transformation_logic,
                     "description": component.description,
                     "yaml_content": component.yaml_content
                 })

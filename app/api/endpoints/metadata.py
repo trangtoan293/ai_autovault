@@ -10,7 +10,9 @@ from app.api.dependencies import get_db
 from app.models.metadata import MetadataCreate, MetadataResponse, Metadata
 from app.services.metadata_store import MetadataService
 from app.core.logging import logger
-
+from app.api.dependencies import get_current_active_user
+from app.core.security import check_admin_permission
+from app.models.config import User
 router = APIRouter()
 metadata_service = MetadataService()
 
@@ -19,7 +21,9 @@ metadata_service = MetadataService()
 async def upload_metadata_file(
     request: Request,
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+
 ):
     """
     Upload and process metadata file (CSV/Excel)
@@ -40,7 +44,9 @@ def get_all_metadata(
     skip: int = 0, 
     limit: int = 100,
     source_system: Optional[str] = Query(None, description="Filter by source system"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+
 ):
     """
     Retrieve all metadata entries with optional filtering
@@ -62,7 +68,8 @@ def get_all_metadata(
 
 
 @router.get("/{metadata_id}", response_model=MetadataResponse)
-def get_metadata(metadata_id: int, db: Session = Depends(get_db)):
+def get_metadata(metadata_id: int, db: Session = Depends(get_db),current_user: User = Depends(get_current_active_user)
+):
     """
     Retrieve a specific metadata entry by ID
     """
@@ -88,7 +95,9 @@ def get_metadata(metadata_id: int, db: Session = Depends(get_db)):
 def update_metadata(
     metadata_id: int, 
     metadata: MetadataCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+
 ):
     """
     Update a metadata entry
@@ -112,7 +121,7 @@ def update_metadata(
 
 
 @router.delete("/{metadata_id}", response_model=MetadataResponse)
-def delete_metadata(metadata_id: int, db: Session = Depends(get_db)):
+def delete_metadata(metadata_id: int, db: Session = Depends(get_db),current_user: User = Depends(get_current_active_user)):
     """
     Delete a metadata entry
     """
